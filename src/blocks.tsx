@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  ArrowUpRight,
   ArrowRight,
   ChevronLeft,
   ChevronRight,
@@ -33,7 +32,6 @@ export function Button({
   return (
     <Link className={`button ${className}`} to={url(to)}>
       {children}
-      <ArrowUpRight size={18} />
     </Link>
   );
 }
@@ -113,7 +111,6 @@ export function Hero(p: any) {
             <div className="creative-poster">
               <div className="poster-top">
                 <span>{p.posterLabel || "DF® CREATIVE STUDIO"}</span>
-                <ArrowUpRight size={30} />
               </div>
               <div className="poster-type">
                 {p.posterText || "MAKE\nIT MATTER."}
@@ -213,7 +210,6 @@ export function ServiceGrid(p: any) {
                   <span>0{i + 1}</span>
                 </div>
                 <h3>{d.title}</h3>
-                <p>{d.description}</p>
                 <div className="service-tags">
                   {String(d.features || "")
                     .split(",")
@@ -224,9 +220,6 @@ export function ServiceGrid(p: any) {
                 </div>
                 <div className="service-bottom">
                   <span>Explore service</span>
-                  <span className="circle-arrow">
-                    <ArrowUpRight size={19} />
-                  </span>
                 </div>
               </Link>
             );
@@ -276,10 +269,7 @@ export function Process(p: any) {
         <div className="process-grid">
           {p.steps?.map((s: any, i: number) => (
             <div key={i}>
-              <span className="step-number">
-                0{i + 1}
-                <ArrowUpRight size={21} />
-              </span>
+              <span className="step-number">0{i + 1}</span>
               <h3>{s.title}</h3>
               <p>{s.description}</p>
             </div>
@@ -322,7 +312,6 @@ export function ProjectGrid(p: any) {
                   <div>
                     <h3>{r.published!.title}</h3>
                   </div>
-                  <ArrowUpRight />
                 </div>
               </Link>
             ))}
@@ -643,7 +632,6 @@ export function JobListing(p: any) {
                     {r.published!.employment}
                   </p>
                 </div>
-                <ArrowUpRight />
               </Link>
             ))}
           </div>

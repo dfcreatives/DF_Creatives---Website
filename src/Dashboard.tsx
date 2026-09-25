@@ -13,7 +13,6 @@ import {
   ExternalLink,
   LogOut,
   Plus,
-  ArrowUpRight,
   ArrowRight,
   Save,
   Upload,
@@ -171,7 +170,7 @@ function Login({ onLogin }: { onLogin: () => void }) {
           )}
         </form>
         <Link to="/" className="login-back">
-          Back to the website <ArrowUpRight size={13} />
+          Back to the website
         </Link>
       </div>
     </div>
@@ -520,7 +519,6 @@ function Overview({ records }: { records: Content[] }) {
           </p>
           <Link className="admin-button" to="/admin/pages/home">
             Make it yours
-            <ArrowUpRight size={15} />
           </Link>
         </div>
       </div>
@@ -580,7 +578,7 @@ function ContentTable({ records }: { records: Content[] }) {
                   className="text-link"
                   to={`/admin/${r.kind === "page" ? "pages" : "collections"}/${r.id}`}
                 >
-                  Edit <ArrowUpRight size={13} />
+                  Edit
                 </Link>
               </td>
             </tr>

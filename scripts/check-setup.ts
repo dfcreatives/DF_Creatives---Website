@@ -15,7 +15,8 @@ if (!configured) {
   try {
     const { count, error } = await supabase!
       .from("content")
-      .select("id", { count: "exact", head: true });
+      .select("id", { count: "exact" })
+      .limit(1);
     if (error) throw error;
     console.log(`Database: connected (${count ?? 0} content records).`);
     if (!count) console.log("Next: npm run db:seed");

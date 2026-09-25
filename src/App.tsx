@@ -1,6 +1,6 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ArrowUpRight, ArrowRight, Menu, X, ChevronDown } from "lucide-react";
+import { ArrowRight, X, ChevronDown } from "lucide-react";
 import { SiteContext, useSite } from "./context";
 import {
   BlockRenderer,
@@ -12,20 +12,20 @@ import {
 } from "./blocks";
 import type { PublicData } from "./types";
 const Dashboard = lazy(() => import("./Dashboard"));
-export function Wordmark() {
+export function Wordmark({ onMenu }: { onMenu?: () => void } = {}) {
   const { settings } = useSite();
-  return (
-    <Link to="/" className="wordmark" aria-label={`${settings.name} home`}>
+  const content = (
+    <>
       {settings.logo ? (
         settings.logo === "/images/df-creatives-logo.png" ? (
-          <span className="supplied-logo">
-            <img
-              src={url(settings.logo)}
-              alt={settings.name}
-              width={1024}
-              height={1024}
-            />
-          </span>
+          <>
+            <span className="supplied-logo">
+              <img src={url(settings.logo)} alt="" width={512} height={512} />
+            </span>
+            <span className="supplied-wordmark">
+              {settings.name.replace(/^DF\s*/i, "")}
+            </span>
+          </>
         ) : (
           <img src={url(settings.logo)} alt={settings.name} />
         )
@@ -41,12 +41,44 @@ export function Wordmark() {
           </span>
         </>
       )}
+    </>
+  );
+  return onMenu ? (
+    <button
+      type="button"
+      className="wordmark mobile-logo-trigger"
+      aria-label={`Open ${settings.name} navigation`}
+      aria-haspopup="dialog"
+      onClick={onMenu}
+    >
+      {content}
+    </button>
+  ) : (
+    <Link to="/" className="wordmark" aria-label={`${settings.name} home`}>
+      {content}
     </Link>
   );
 }
 function Header() {
   const { settings } = useSite();
   const [open, setOpen] = useState(false);
+  const sidebar = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    const dialog = sidebar.current;
+    if (!open || !dialog) return;
+    dialog.showModal();
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const resize = () => {
+      if (window.innerWidth > 600) setOpen(false);
+    };
+    window.addEventListener("resize", resize);
+    return () => {
+      dialog.close();
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("resize", resize);
+    };
+  }, [open]);
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const updateScroll = () => setScrolled(window.scrollY > 48);
@@ -67,19 +99,15 @@ function Header() {
         <div className="announcement">
           <Link to={url(settings.announcementLink)}>
             {settings.announcement}
-            <span>
-              Let’s make it happen <ArrowUpRight size={13} />
-            </span>
+            <span>Let’s make it happen</span>
           </Link>
         </div>
       )}
       <header className={scrolled ? "header is-scrolled" : "header"}>
         <div className="container navbar">
           <Wordmark />
-          <nav
-            className={open ? "nav open" : "nav"}
-            aria-label="Main navigation"
-          >
+          <Wordmark onMenu={() => setOpen(true)} />
+          <nav className="nav" aria-label="Main navigation">
             {settings.nav.map((item, i) => (
               <div className="nav-item" key={i}>
                 <Link
@@ -96,7 +124,6 @@ function Header() {
                     {item.children.map((c, j) => (
                       <Link to={url(c.href)} key={j}>
                         {c.label}
-                        <ArrowUpRight size={14} />
                       </Link>
                     ))}
                   </div>
@@ -110,16 +137,54 @@ function Header() {
           <Button className="nav-cta" to={settings.ctaHref}>
             {settings.ctaLabel}
           </Button>
-          <button
-            className="menu-toggle"
-            aria-label={open ? "Close navigation" : "Open navigation"}
-            aria-expanded={open}
-            onClick={() => setOpen(!open)}
-          >
-            {open ? <X /> : <Menu />}
-          </button>
         </div>
       </header>
+      <dialog
+        ref={sidebar}
+        className="mobile-sidebar"
+        aria-labelledby="sidebar-title"
+        onCancel={() => setOpen(false)}
+        onClose={() => setOpen(false)}
+        onClick={(event) => {
+          if (event.target === event.currentTarget) {
+            const bounds = event.currentTarget.getBoundingClientRect();
+            if (event.clientX > bounds.right || event.clientX < bounds.left)
+              setOpen(false);
+          }
+        }}
+      >
+        <div className="sidebar-heading">
+          <h2 id="sidebar-title">Explore {settings.name}</h2>
+          <button
+            type="button"
+            aria-label="Close navigation"
+            onClick={() => setOpen(false)}
+          >
+            <X size={22} />
+          </button>
+        </div>
+        <nav
+          aria-label="Mobile navigation"
+          onClick={(event) => {
+            if ((event.target as HTMLElement).closest("a")) setOpen(false);
+          }}
+        >
+          <Link to="/">Home</Link>
+          {settings.nav.map((item, i) => (
+            <div className="sidebar-item" key={i}>
+              <Link to={url(item.href)}>{item.label}</Link>
+              {item.children?.map((child, j) => (
+                <Link className="sidebar-child" to={url(child.href)} key={j}>
+                  {child.label}
+                </Link>
+              ))}
+            </div>
+          ))}
+          <Button className="sidebar-cta" to={settings.ctaHref}>
+            {settings.ctaLabel}
+          </Button>
+        </nav>
+      </dialog>
     </>
   );
 }
@@ -161,7 +226,7 @@ function Footer() {
           <div>
             <h4>{settings.footerContact || "Have something in mind?"}</h4>
             <Link className="footer-hello" to="/contact">
-              Say hello <ArrowUpRight size={19} />
+              Say hello
             </Link>
             {settings.email && (
               <a href={`mailto:${settings.email}`}>{settings.email}</a>
@@ -172,7 +237,6 @@ function Footer() {
             {settings.social.map((s, i) => (
               <a key={i} href={url(s.href)} target="_blank" rel="noreferrer">
                 {s.label}
-                <ArrowUpRight size={13} />
               </a>
             ))}
           </div>
@@ -184,9 +248,7 @@ function Footer() {
           <div>
             <Link to="/privacy">Privacy policy</Link>
             <Link to="/terms">Terms</Link>
-            <Link to="/admin">
-              Studio dashboard <ArrowUpRight size={12} />
-            </Link>
+            <Link to="/admin">Studio dashboard</Link>
           </div>
         </div>
       </div>
@@ -270,7 +332,6 @@ function PublicPage() {
                     <div key={f}>
                       <span>0{i + 1}</span>
                       <h3>{f}</h3>
-                      <ArrowUpRight />
                     </div>
                   ))}
               </div>
