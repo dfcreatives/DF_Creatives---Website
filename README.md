@@ -87,3 +87,15 @@ Cloud-dependent operations (real Supabase Auth/invitations, SQL/RLS execution, s
 The site uses your supplied DF Creatives logo, framed with CSS for the navigation, footer, and dashboard. Replace it through Site Settings when needed. Photography is illustrative stock, not an assertion about DF Creatives' staff or clients. Replace it with your own imagery whenever ready. Source URLs are recorded in `ASSETS.md`.
 
 Contact details and social URLs are blank until supplied. Pricing, company metrics, client claims, and open positions are not invented. The privacy and terms pages are editable starter copy and should be aligned with your actual business practices before launch. This version is English-only and excludes payments, CRM integrations, and arbitrary freeform layouts.
+
+
+## Vercel deployment
+
+The repository includes `vercel.json` and `api/index.ts` to serve the Express API and server-rendered pages through a Vercel Function. Static assets are served from `dist/client`; the HTML template and SSR bundle are also included in the function. Render and local development still use `npm start` and `npm run dev` respectively.
+
+1. Import this repository, with the repository root as Root Directory and **Other** as Framework Preset. Remove dashboard build/output overrides so `vercel.json` controls the build (`npm run build`) and output (`dist/client`).
+2. Add `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, and `SITE_URL` in Vercel's environment variables. Set `SITE_URL` to the production HTTPS URL. Add `RESEND_API_KEY`, `EMAIL_FROM`, and `NOTIFICATION_EMAIL` for email notifications. Never use a `VITE_` prefix for server credentials.
+3. Apply `supabase/migrations/001_initial.sql`, seed content, and create the first admin using the setup instructions above. Do not run migrations or seed automatically during deployments.
+4. Deploy the latest commit. Verify `/health`, the homepage, `/admin`, and an individual service route. A healthy connection needs the `profiles` table as well as `content`.
+
+Vercel Functions impose a request-body size limit (including multipart overhead); large media uploads may require direct-to-Supabase signed uploads or the Render deployment. Existing upload validation does not bypass the hosting platform's limit. Local `.env` and `.local` data are not uploaded, so configure the environment and published database content separately.

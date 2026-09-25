@@ -149,9 +149,14 @@ app.use((err: any, _req: any, res: any, _next: any) => {
           : err.message,
   });
 });
-const port = Number(process.env.PORT || 3000);
-app.listen(port, production ? "0.0.0.0" : "127.0.0.1", () =>
-  console.log(
-    `DF Creatives: http://localhost:${port}${demo ? " (local demo)" : ""}`,
-  ),
-);
+export default app;
+
+// Vercel invokes the exported app; local development and Render bind a port.
+if (!process.env.VERCEL) {
+  const port = Number(process.env.PORT || 3000);
+  app.listen(port, production ? "0.0.0.0" : "127.0.0.1", () =>
+    console.log(
+      `DF Creatives: http://localhost:${port}${demo ? " (local demo)" : ""}`,
+    ),
+  );
+}
